@@ -1,0 +1,108 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+
+{% block title %}My Dashboard | Lost & Found{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50/50 dark:bg-slate-950 pt-28 pb-20 transition-colors duration-300">
+    <div class="max-w-6xl mx-auto px-4">
+
+        {# --- DASHBOARD HEADER --- #}
+        <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">My Reports</h1>
+                <p class="text-slate-500 dark:text-slate-400 font-medium">Manage your active listings and track recovery progress.</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <div class="bg-white dark:bg-slate-900 px-6 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Total Posts</span>
+                    <span class="text-xl font-black text-indigo-600">{{ items.count }}</span>
+                </div>
+                <div class="bg-white dark:bg-slate-900 px-6 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Resolved</span>
+                    <span class="text-xl font-black text-emerald-500">{{ resolved_count|default:"0" }}</span>
+                </div>
+            </div>
+        </div>
+
+        {# --- LISTINGS MANAGEMENT --- #}
+        <div class="grid gap-4">
+            {% for item in items %}
+            <div class="group bg-white dark:bg-slate-900 rounded-[2rem] p-4 pr-6 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    
+                    {# 1. Thumbnail #}
+                    <div class="w-full md:w-32 h-32 rounded-2xl overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                <i class="fa-solid fa-image text-2xl opacity-20"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# 2. Content Info #}
+                    <div class="flex-grow text-center md:text-left">
+                        <div class="flex flex-wrap justify-center md:justify-start items-center gap-2 mb-2">
+                            <span class="text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full {% if item.item_type == 'found' %}bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20{% else %}bg-rose-100 text-rose-600 dark:bg-rose-900/20{% endif %}">
+                                {{ item.get_item_type_display }}
+                            </span>
+                            <span class="text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                {{ item.get_status_display }}
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white mb-1">{{ item.title }}</h3>
+                        <p class="text-xs font-bold text-slate-400 mb-0">
+                            <i class="fa-solid fa-location-dot me-1 text-indigo-500"></i> {{ item.location }} 
+                            <span class="mx-2 opacity-30">|</span> 
+                            <i class="fa-regular fa-clock me-1"></i> {{ item.created_at|naturaltime }}
+                        </p>
+                    </div>
+
+                    {# 3. Claim Alert (If someone claimed this item) #}
+                    {% if item.active_claim %}
+                    <div class="px-5 py-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/50 rounded-2xl flex items-center gap-3">
+                        <div class="w-2 h-2 bg-amber-500 rounded-full animate-ping"></div>
+                        <div>
+                            <p class="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-0">Pending Claim</p>
+                            <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-0">Review from @{{ item.active_claim.claimant.username }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# 4. Quick Actions #}
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <a href="{% url 'core:item_detail' pk=item.pk %}" class="flex-1 md:flex-none p-4 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all text-center no-underline" title="View">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                        <a href="{% url 'core:item_update' pk=item.pk %}" class="flex-1 md:flex-none p-4 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all text-center no-underline" title="Edit">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <form action="{% url 'core:delete_item' pk=item.pk %}" method="POST" class="flex-1 md:flex-none" onsubmit="return confirm('Permanently delete this report?');">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full p-4 bg-slate-50 dark:bg-slate-800 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all border-none">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            {# --- EMPTY STATE --- #}
+            <div class="text-center py-20 bg-white dark:bg-slate-900 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <div class="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fa-solid fa-clipboard-list text-3xl text-slate-300"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-900 dark:text-white mb-2">No reports found</h3>
+                <p class="text-slate-500 dark:text-slate-400 mb-8 max-w-xs mx-auto">You haven't posted any lost or found items yet.</p>
+                <a href="{% url 'core:report_item' %}" class="inline-block bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest no-underline shadow-xl shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
+                    Create a Report
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

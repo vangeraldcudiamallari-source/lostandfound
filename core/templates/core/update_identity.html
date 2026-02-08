@@ -1,0 +1,154 @@
+{% extends 'core/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Update_Identity | Found.it{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 dark:bg-[#020617] pt-28 pb-20 px-4 transition-colors duration-500 relative overflow-hidden">
+    
+    {# --- BACKGROUND DECOR --- #}
+    <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
+         style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 30px 30px;"></div>
+
+    {# --- SCANLINE EFFECT --- #}
+    <div class="absolute inset-0 z-50 pointer-events-none opacity-[0.02] dark:opacity-[0.04]" 
+         style="background: linear-gradient(to bottom, transparent, #000 50%, transparent); background-size: 100% 4px; animation: scan 4s linear infinite;"></div>
+
+    <div class="max-w-2xl mx-auto relative z-10">
+        
+        {# --- HEADER NAVIGATION --- #}
+        <div class="mb-8 flex items-center justify-between">
+            <a href="{% url 'core:profile' %}" class="group flex items-center gap-2 no-underline">
+                <div class="w-8 h-8 border-2 border-black dark:border-white flex items-center justify-center group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-all">
+                    <i class="fas fa-arrow-left text-xs"></i>
+                </div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-black dark:text-white">Return_to_Profile</span>
+            </a>
+            <div class="text-right">
+                <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest block">Update_Protocol</span>
+                <span class="text-[8px] font-mono text-slate-400 uppercase tracking-tighter">Status: Manual_Override_Active</span>
+            </div>
+        </div>
+
+        {# --- FORM CONTAINER --- #}
+        <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-8 md:p-12 shadow-[16px_16px_0px_0px_rgba(99,102,241,1)] dark:shadow-[16px_16px_0px_0px_rgba(99,102,241,0.1)] transition-all">
+            
+            <h2 class="text-4xl font-black text-black dark:text-white uppercase tracking-tighter mb-10 border-b-8 border-black dark:border-white pb-4 italic">
+                Modify_Identity_Parameters<span class="animate-pulse text-indigo-600">_</span>
+            </h2>
+
+            <form method="POST" enctype="multipart/form-data" class="space-y-10">
+                {% csrf_token %}
+
+                {# AVATAR UPLOAD SECTION #}
+                <div class="group relative p-6 border-4 border-black dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 transition-colors">
+                    <div class="flex flex-col md:flex-row items-center gap-8">
+                        <div class="relative">
+                            <div class="w-28 h-28 border-4 border-black dark:border-white bg-white dark:bg-slate-900 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)]">
+                                {% if user.profile.image %}
+                                    <img src="{{ user.profile.image.url }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
+                                        <i class="fas fa-user-shield text-4xl"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="absolute -bottom-2 -right-2 bg-black dark:bg-white text-white dark:text-black p-1 text-[8px] font-black uppercase">Visual_ID</div>
+                        </div>
+                        
+                        <div class="flex-grow w-full">
+                            <label class="text-[11px] font-black uppercase tracking-widest mb-3 block text-black dark:text-white">Visual_ID_Sensor (Avatar)</label>
+                            {% render_field form.image class="block w-full text-[10px] text-slate-500 file:mr-4 file:py-2 file:px-4 file:border-2 file:border-black dark:file:border-white file:text-[10px] file:font-black file:uppercase file:bg-black file:text-white dark:file:bg-white dark:file:text-black hover:file:bg-indigo-600 hover:file:text-white transition-all cursor-pointer" %}
+                        </div>
+                    </div>
+                </div>
+
+                {# DATA NODES GROUP #}
+                <div class="space-y-8">
+                    
+                    {# EMAIL NODE (CRITICAL) #}
+                    <div class="form-group">
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">Primary_Gmail_Node</label>
+                            <span class="text-[8px] font-mono text-slate-400 uppercase">Field_Type: Secure_String</span>
+                        </div>
+                        <div class="relative">
+                            {% render_field form.email class="w-full bg-slate-100 dark:bg-slate-800 border-4 border-black dark:border-slate-700 p-4 font-mono text-sm focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none transition-all text-black dark:text-white" placeholder="USER_GMAIL_NODE@GMAIL.COM" %}
+                            
+                            {% if form.email.errors %}
+                                <div class="mt-2 p-3 bg-rose-600 border-2 border-black text-white text-[10px] font-black uppercase tracking-widest animate-glitch">
+                                    <i class="fas fa-triangle-exclamation mr-2"></i> {{ form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# USERNAME NODE #}
+                    <div class="form-group">
+                        <label class="text-[11px] font-black uppercase tracking-[0.2em] mb-2 block text-black dark:text-white">Identity_Identifier (Username)</label>
+                        {% render_field form.username class="w-full bg-slate-100 dark:bg-slate-800 border-4 border-black dark:border-slate-700 p-4 font-mono text-sm focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none transition-all text-black dark:text-white" %}
+                        {% if form.username.errors %}
+                            <p class="text-[9px] font-black text-rose-500 mt-2 uppercase italic tracking-tighter">!! {{ form.username.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    {# TWO COLUMN GRID FOR PHONE/BIO #}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[11px] font-black uppercase tracking-[0.2em] mb-2 block text-black dark:text-white">Phone_Broadcaster</label>
+                            {% render_field form.phone class="w-full bg-slate-100 dark:bg-slate-800 border-4 border-black dark:border-slate-700 p-4 font-mono text-sm focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none transition-all text-black dark:text-white" placeholder="+X XXX XXX XXXX" %}
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-black uppercase tracking-[0.2em] mb-2 block text-black dark:text-white">Identity_Brief (Bio)</label>
+                            {% render_field form.bio class="w-full bg-slate-100 dark:bg-slate-800 border-4 border-black dark:border-slate-700 p-4 font-mono text-sm focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none transition-all text-black dark:text-white" rows="1" placeholder="Operational summary..." %}
+                        </div>
+                    </div>
+                </div>
+
+                {# SUBMIT ACTION #}
+                <div class="pt-6 relative">
+                    {# DECORATIVE OVERLAY #}
+                    <div class="absolute -top-4 left-0 w-full flex justify-between px-2 opacity-30">
+                        <span class="text-[7px] font-mono text-slate-400">01011001</span>
+                        <span class="text-[7px] font-mono text-slate-400">SYNC_READY</span>
+                    </div>
+
+                    <button type="submit" 
+                            class="group relative w-full bg-black dark:bg-white text-white dark:text-black border-4 border-black dark:border-white py-6 font-black uppercase tracking-[0.4em] text-[13px] shadow-[10px_10px_0px_0px_rgba(99,102,241,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all overflow-hidden cursor-pointer">
+                        <span class="relative z-10">Commit_Changes_to_Mainframe</span>
+                        <div class="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-0"></div>
+                    </button>
+                    
+                    <p class="text-[9px] text-center mt-8 font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed">
+                        // Warning: All identity modifications are logged <br> 
+                        // and synced across the Global_Network node registry.
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        {# --- BOTTOM SYSTEM LOGS --- #}
+        <div class="mt-8 grid grid-cols-3 gap-4 opacity-20">
+            <div class="h-1 bg-black dark:bg-white"></div>
+            <div class="h-1 bg-black dark:bg-white animate-pulse"></div>
+            <div class="h-1 bg-black dark:bg-white"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes scan {
+        from { transform: translateY(-100%); }
+        to { transform: translateY(100%); }
+    }
+    @keyframes glitch {
+        0% { transform: translate(0) }
+        20% { transform: translate(-2px, 1px) }
+        40% { transform: translate(-1px, -1px) }
+        60% { transform: translate(1px, 2px) }
+        80% { transform: translate(2px, -1px) }
+        100% { transform: translate(0) }
+    }
+    .animate-glitch { animation: glitch 0.2s ease-in-out infinite; }
+</style>
+{% endblock %}

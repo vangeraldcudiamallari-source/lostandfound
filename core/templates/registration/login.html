@@ -1,0 +1,96 @@
+{% extends 'core/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Terminal_Access | Found.it{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-brand dark:bg-[#020617] flex items-center justify-center pt-20 pb-12 px-4 transition-colors duration-500">
+    
+    {# --- DECORATIVE GRID OVERLAY --- #}
+    <div class="absolute inset-0 z-0 opacity-10 pointer-events-none" 
+         style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;"></div>
+
+    <div class="w-full max-w-[440px] relative z-10">
+        
+        {# --- LOGIN CARD --- #}
+        <div class="bg-white dark:bg-slate-900 p-8 md:p-12 border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] transition-all duration-300">
+            
+            {# HEADER #}
+            <div class="text-center mb-10">
+                <div class="w-16 h-16 bg-white dark:bg-slate-800 border-4 border-black dark:border-white flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <i class="fa-solid fa-unlock-keyhole text-2xl text-black dark:text-white"></i>
+                </div>
+                <h1 class="text-3xl font-black text-black dark:text-white tracking-tighter uppercase mb-2">Terminal_Access</h1>
+                <p class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                    // Identification Required to Access Sector
+                </p>
+            </div>
+
+            {% if form.errors %}
+                <div class="mb-6 p-4 bg-rose-500 border-2 border-black flex items-center gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <i class="fa-solid fa-bolt text-white"></i>
+                    <p class="text-[10px] font-black text-white uppercase tracking-widest mb-0 leading-tight">
+                        Security_Match_Failed. Verify Credentials.
+                    </p>
+                </div>
+            {% endif %}
+
+            {# FIXED: Action now uses core:login to match your namespace #}
+            <form method="post" action="{% url 'core:login' %}" class="space-y-6">
+                {% csrf_token %}
+                
+                {# USERNAME #}
+                <div class="form-group">
+                    <label class="block text-[11px] font-black uppercase tracking-widest text-black dark:text-white mb-2 ml-1">Identity_Handle</label>
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-black dark:text-slate-400 z-10">
+                            <i class="fa-regular fa-user text-sm"></i>
+                        </span>
+                        {% render_field form.username class="w-full p-4 pl-12 border-4 border-black dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-bold text-black dark:text-white focus:outline-none focus:border-brand dark:focus:border-indigo-400 transition-all placeholder:text-slate-400" placeholder="USER_HANDLE" %}
+                    </div>
+                </div>
+
+                {# PASSWORD #}
+                <div class="form-group">
+                    <div class="flex justify-between items-center mb-2 ml-1">
+                        <label class="text-[11px] font-black uppercase tracking-widest text-black dark:text-white">Access_Key</label>
+                        {# Verify password_reset is in your main urls.py or update to core:password_reset #}
+                        <a href="{% url 'password_reset' %}" class="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-brand no-underline transition-colors italic">Key_Lost?</a>
+                    </div>
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-black dark:text-slate-400 z-10">
+                            <i class="fa-regular fa-lock text-sm"></i>
+                        </span>
+                        {% render_field form.password class="w-full p-4 pl-12 border-4 border-black dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-bold text-black dark:text-white focus:outline-none focus:border-brand dark:focus:border-indigo-400 transition-all placeholder:text-slate-400" placeholder="••••••••" %}
+                    </div>
+                </div>
+
+                {# REDIRECT LOGIC #}
+                <input type="hidden" name="next" value="{{ next|default:'core:dashboard' }}">
+
+                {# SUBMIT #}
+                <button type="submit" class="w-full bg-brand text-white border-4 border-black dark:border-white py-4 text-[12px] font-black uppercase tracking-[0.2em] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer flex items-center justify-center gap-2">
+                    Initialize_Session <i class="fa-solid fa-arrow-right-long text-xs"></i>
+                </button>
+            </form>
+
+            {# FOOTER LINKS #}
+            <div class="mt-10 pt-8 border-t-2 border-slate-100 dark:border-slate-800 text-center space-y-4">
+                <p class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-0">
+                    Unknown_Identity? 
+                    <a href="{% url 'core:signup' %}" class="text-brand dark:text-indigo-400 font-black no-underline ml-1 hover:underline underline-offset-4">Register_Signal</a>
+                </p>
+                {# FIXED: Namespace added to home #}
+                <a href="{% url 'core:home' %}" class="inline-block text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-black dark:hover:text-white no-underline transition-colors">
+                    <i class="fa-solid fa-house-chimney me-1"></i> Return_to_Base
+                </a>
+            </div>
+        </div>
+
+        {# BOTTOM TAGLINE #}
+        <p class="text-center mt-8 text-[9px] font-black text-black dark:text-white uppercase tracking-[0.5em] opacity-30">
+            Secure_Access_Gateway_v2.5
+        </p>
+    </div>
+</div>
+{% endblock %}

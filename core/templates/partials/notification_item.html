@@ -1,0 +1,43 @@
+<div class="notification-center pointer-events-auto flex items-center border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-0 mb-4 animate-in fade-in slide-in-from-top-4 duration-300 relative overflow-hidden
+    {% if message.tags == 'error' or message.tags == 'danger' %}bg-rose-500{% elif message.tags == 'warning' %}bg-amber-400{% else %}bg-[#4ADE80]{% endif %}">
+    
+    <div class="border-r-4 border-black p-4 flex items-center justify-center">
+        <div class="w-6 h-6 border-2 border-black flex items-center justify-center bg-white/20">
+            {% if message.tags == 'error' or message.tags == 'danger' %}
+                <i class="fa-solid fa-triangle-exclamation text-xs text-black"></i>
+            {% elif message.tags == 'warning' %}
+                <i class="fa-solid fa-circle-exclamation text-xs text-black"></i>
+            {% else %}
+                <i class="fa-solid fa-check text-xs text-black"></i>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="px-6 py-4 flex-1">
+        <p class="text-black font-black uppercase tracking-tight text-[10px] leading-tight opacity-70">
+            SYSTEM_LOG // {{ message.tags|default:"INFO"|upper }}
+        </p>
+        <p class="text-black font-black uppercase tracking-tight text-sm m-0 leading-tight">
+            <span>{{ message }}</span>
+        </p>
+    </div>
+
+    <button onclick="this.closest('.notification-center').remove()" 
+            class="border-l-4 border-black p-4 hover:bg-black/10 transition-colors pointer-events-auto group">
+        <i class="fa-solid fa-xmark text-black group-hover:scale-125 transition-transform"></i>
+    </button>
+
+    <div class="absolute bottom-0 left-0 h-1 bg-black/20 w-full">
+        <div class="h-full bg-black/40 notification-progress" style="width: 100%;"></div>
+    </div>
+</div>
+
+<style>
+    @keyframes progressShrink {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+    .notification-progress {
+        animation: progressShrink 5s linear forwards;
+    }
+</style>

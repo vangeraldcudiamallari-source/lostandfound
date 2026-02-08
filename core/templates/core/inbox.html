@@ -1,0 +1,189 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+
+{% block title %}Inbox | Lost & Found{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300" style="padding-top: 6rem; padding-bottom: 2rem;">
+    <div class="max-w-5xl mx-auto px-4">
+        
+        {# --- HEADER SECTION --- #}
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+            <div>
+                <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Messages</h1>
+                <div class="flex items-center gap-3">
+                    <span class="flex h-2 w-2 rounded-full bg-indigo-600"></span>
+                    <p class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest mb-0">
+                        {{ conversations.count }} Active Conversations
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <a href="{% url 'core:mark_all_as_read' %}" class="flex items-center gap-2 bg-white dark:bg-slate-900 px-5 py-2.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-tighter text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition-all no-underline">
+                    <i class="fas fa-check-double text-emerald-500"></i> Mark All Read
+                </a>
+            </div>
+        </div>
+
+        {# --- SEARCH BAR --- #}
+        <div class="mb-8">
+            <div class="relative group">
+                <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                <input type="text" id="inboxSearch" placeholder="Search by name or item title..." 
+                       class="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[1.5rem] py-4.5 pl-14 pr-6 shadow-xl shadow-slate-200/50 dark:shadow-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white placeholder:text-slate-400 font-medium">
+            </div>
+        </div>
+
+        {# --- CONVERSATIONS CONTAINER --- #}
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-slate-200/60 dark:shadow-none border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div id="conversationList" class="divide-y divide-slate-50 dark:divide-slate-800">
+                {% for conversation in conversations %}
+                    {% with other_user=conversation.get_other_participant|default:request.user %}
+                    {% with last_msg=conversation.messages.last %}
+                    
+                    <a href="{% url 'core:conversation_detail' conversation_id=conversation.id %}" 
+                       class="conversation-item flex items-center gap-5 p-6 md:p-8 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all no-underline group relative {% if conversation.item.status == 'resolved' %}opacity-75{% endif %}"
+                       data-search="{{ other_user.username|lower }} {{ conversation.item.title|lower }}">
+                        
+                        {# Active Indicator (Left Border) #}
+                        {% if last_msg.sender != request.user and not last_msg.is_read %}
+                            <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-indigo-600"></div>
+                        {% endif %}
+
+                        {# Avatar #}
+                        <div class="relative flex-shrink-0">
+                            <div class="w-16 h-16 rounded-[1.25rem] bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 text-2xl font-black shadow-inner group-hover:scale-105 transition-transform duration-300">
+                                {{ other_user.username|slice:":1"|upper }}
+                            </div>
+                            {% if last_msg.sender != request.user and not last_msg.is_read %}
+                                <span class="absolute -top-1 -right-1 flex h-5 w-5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-5 w-5 bg-indigo-600 border-4 border-white dark:border-slate-900"></span>
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {# Main Content Area #}
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-base font-black text-slate-900 dark:text-white truncate mb-0">@{{ other_user.username }}</h3>
+                                    {% if conversation.item.status == 'resolved' %}
+                                        <i class="fas fa-check-circle text-emerald-500 text-xs" title="Resolved"></i>
+                                    {% endif %}
+                                </div>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                                    {% if last_msg %}
+                                        {{ last_msg.timestamp|naturaltime }}
+                                    {% else %}
+                                        {{ conversation.updated_at|date:"M d" }}
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <p class="text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter mb-2 truncate">
+                                RE: {{ conversation.item.title|truncatechars:45 }}
+                            </p>
+
+                            <p class="text-sm text-slate-500 dark:text-slate-400 truncate mb-0 leading-relaxed">
+                                {% if last_msg %}
+                                    <span class="{% if not last_msg.is_read and last_msg.sender != request.user %}font-bold text-slate-900 dark:text-white{% endif %}">
+                                        {% if last_msg.sender == request.user %}
+                                            <i class="fas fa-reply text-[10px] mr-1 opacity-40"></i>
+                                        {% endif %}
+                                        
+                                        {% if last_msg.attachment %}
+                                            <span class="flex items-center gap-1.5">
+                                                <i class="fas fa-image text-xs"></i> Sent an image
+                                            </span>
+                                        {% else %}
+                                            {{ last_msg.body }}
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="italic text-slate-300">New conversation started...</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        {# Chevron #}
+                        <div class="hidden md:block opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all text-indigo-500">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+
+                    {% endwith %}
+                    {% endwith %}
+                {% empty %}
+                    {# --- EMPTY STATE --- #}
+                    <div class="flex flex-col items-center justify-center py-24 px-8 text-center bg-slate-50/30 dark:bg-slate-900/50">
+                        <div class="w-24 h-24 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl flex items-center justify-center text-slate-200 dark:text-slate-700 mb-8 border border-slate-100 dark:border-slate-800">
+                            <i class="fas fa-envelope-open text-5xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-3">No messages yet</h2>
+                        <p class="text-slate-500 dark:text-slate-400 max-w-sm mb-8 text-base font-medium leading-relaxed">
+                            Once you contact a finder or someone messages you about an item, the conversations will appear here.
+                        </p>
+                        <a href="{% url 'core:home' %}" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 hover:scale-105 transition-all no-underline">
+                            Explore Listings <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                {% endfor %}
+
+                {# --- SEARCH EMPTY STATE --- #}
+                <div id="searchEmptyState" class="hidden flex flex-col items-center justify-center py-24 text-center">
+                    <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400 mb-4">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-900 dark:text-white">No matches found</h3>
+                    <p class="text-slate-500 text-sm font-medium">Try searching for a different name or item.</p>
+                </div>
+            </div>
+        </div>
+        
+        {# --- FOOTER TIP --- #}
+        <div class="mt-8 text-center">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+                <i class="fas fa-shield-alt mr-2 text-indigo-500"></i> Safety first: Meet in public places
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('inboxSearch');
+        const items = document.querySelectorAll('.conversation-item');
+        const emptyState = document.getElementById('searchEmptyState');
+
+        searchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase().trim();
+            let hasVisibleItems = false;
+
+            items.forEach(item => {
+                const searchData = item.getAttribute('data-search');
+                if (searchData.includes(filter)) {
+                    item.style.display = 'flex';
+                    hasVisibleItems = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            if (!hasVisibleItems && filter !== "") {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+<style>
+    /* Custom spacing and hover effects */
+    .py-4.5 { padding-top: 1.125rem; padding-bottom: 1.125rem; }
+    .conversation-item:last-child { border-bottom: none; }
+    .no-underline { text-decoration: none !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+
+{% block title %}Signal: {{ item.title }} | Found.it{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 dark:bg-[#020617] pt-28 pb-20 transition-colors duration-500">
+    <div class="max-w-6xl mx-auto px-4 relative z-10">
+        
+        {# --- TOP NAVIGATION --- #}
+        <nav class="mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+            <a href="{% url 'core:home' %}" class="inline-flex items-center gap-3 bg-white dark:bg-slate-900 border-4 border-black dark:border-white px-6 py-3 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all no-underline text-black dark:text-white group">
+                <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                Back to Feed
+            </a>
+            
+            <div class="flex items-center gap-4 bg-black dark:bg-white text-white dark:text-black px-6 py-3 border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(74,222,128,1)]">
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">Status:</span>
+                <span class="flex items-center gap-2 text-xs font-black uppercase tracking-tighter">
+                    <span class="w-2 h-2 rounded-full {% if item.status == 'active' %}bg-[#4ADE80] animate-pulse{% elif item.status == 'resolved' %}bg-slate-400{% else %}bg-amber-400 animate-pulse{% endif %}"></span>
+                    {{ item.get_status_display }}
+                </span>
+            </div>
+        </nav>
+
+        <div id="message-container">
+            {% include 'core/messages.html' %}
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-12 items-start">
+            
+            {# --- LEFT COLUMN: THE INTEL --- #}
+            <div class="lg:w-2/3 w-full space-y-10">
+                {# MAIN IMAGE #}
+                <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-4 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                    {% if item.image %}
+                        <div class="overflow-hidden border-4 border-black dark:border-white bg-slate-200">
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" 
+                                 class="w-full h-[500px] object-cover {% if item.status == 'resolved' %}grayscale{% else %}grayscale hover:grayscale-0{% endif %} transition-all duration-700 cursor-crosshair">
+                        </div>
+                    {% else %}
+                        <div class="w-full h-[400px] bg-slate-100 dark:bg-slate-800 border-4 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center text-slate-400">
+                            <i class="fa-solid fa-camera-retro text-6xl mb-4 opacity-20"></i>
+                            <p class="font-black uppercase tracking-widest text-[10px]">Visual Reference Missing</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# CONTENT BLOCK #}
+                <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-8 md:p-12 shadow-[12px_12px_0px_0px_rgba(79,70,229,1)]">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="{% if item.item_type == 'lost' %}bg-rose-500{% else %}bg-[#4ADE80]{% endif %} text-black border-2 border-black px-4 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            {{ item.get_item_type_display }}
+                        </span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">// Signal_ID: #{{ item.id|stringformat:"05d" }}</span>
+                    </div>
+
+                    <h1 class="text-5xl md:text-7xl font-black text-black dark:text-white uppercase leading-none tracking-tighter mb-8 break-words">
+                        {{ item.title }}
+                    </h1>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                        <div class="bg-slate-100 dark:bg-slate-800 p-4 border-2 border-black dark:border-white flex items-center gap-4">
+                            <i class="fa-solid fa-location-dot text-indigo-600"></i>
+                            <div>
+                                <p class="text-[9px] font-black uppercase text-slate-500 m-0">Detected At</p>
+                                <p class="font-black text-sm uppercase m-0 dark:text-white">{{ item.location }}</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-100 dark:bg-slate-800 p-4 border-2 border-black dark:border-white flex items-center gap-4">
+                            <i class="fa-solid fa-clock text-indigo-600"></i>
+                            <div>
+                                <p class="text-[9px] font-black uppercase text-slate-500 m-0">Event Timestamp</p>
+                                <p class="font-black text-sm uppercase m-0 dark:text-white">{{ item.date_happened|date:"d M Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prose prose-slate dark:prose-invert max-w-none">
+                        <h4 class="font-black uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
+                            <span class="w-8 h-1 bg-black dark:bg-white"></span> Full Intel
+                        </h4>
+                        <div class="text-lg font-bold leading-relaxed dark:text-slate-300">
+                            {{ item.description|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# --- RIGHT COLUMN: SIDEBAR --- #}
+            <aside class="lg:w-1/3 w-full sticky top-28 space-y-8">
+                
+                {# USER INTEL #}
+                <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-14 h-14 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-black text-2xl border-2 border-black">
+                            {{ item.user.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black uppercase text-slate-500 m-0">Signal Source</p>
+                            <p class="font-black text-lg uppercase m-0 dark:text-white">@{{ item.user.username }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% if item.status == 'resolved' %}
+                            {# --- ARCHIVED / RESOLVED STATE --- #}
+                            <div class="bg-[#4ADE80] text-black p-6 border-4 border-black text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                <i class="fa-solid fa-box-archive text-3xl mb-2"></i>
+                                <p class="font-black uppercase tracking-widest text-xs">Signal Archived</p>
+                                <p class="text-[10px] font-bold opacity-80 mt-1">RESOLVED ON {{ item.resolved_at|date:"M j, Y" }}</p>
+                                <p class="text-[9px] mt-2 font-mono uppercase">Claimant: @{{ item.claimed_by.username }}</p>
+                            </div>
+
+                        {% elif request.user == item.user %}
+                            {# --- OWNER CONTROLS --- #}
+                            <a href="{% url 'core:item_edit' pk=item.pk %}" class="block w-full text-center bg-indigo-600 text-white py-4 border-4 border-black font-black uppercase tracking-widest text-sm hover:bg-black transition-colors no-underline shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none">
+                                <i class="fas fa-edit me-2"></i> Edit Record
+                            </a>
+                            
+                            {% if active_claim %}
+                                <div class="p-6 bg-amber-400 border-4 border-black mt-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                    <p class="font-black uppercase text-xs mb-2 italic">Incoming Claim!</p>
+                                    <p class="text-[10px] font-bold mb-4 uppercase">@{{ active_claim.claimant.username }} is requesting ownership.</p>
+                                    
+                                    {% if not active_claim.reporter_confirmed %}
+                                    <form action="{% url 'core:confirm_resolution' active_claim.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button class="w-full bg-black text-white py-4 font-black uppercase text-xs tracking-widest hover:bg-white hover:text-black border-2 border-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none">
+                                            Authorize Handover
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <div class="bg-black/10 p-3 text-center border-2 border-dashed border-black">
+                                        <p class="text-[10px] font-black uppercase m-0">Awaiting Peer Signature...</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            <form action="{% url 'core:delete_item' pk=item.pk %}" method="POST" class="m-0 mt-3">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('Erase signal from database?');" class="w-full bg-white dark:bg-slate-800 text-rose-600 border-4 border-black dark:border-white py-3 font-black uppercase tracking-widest text-[10px] hover:bg-rose-600 hover:text-white transition-all cursor-pointer">
+                                    Purge Signal
+                                </button>
+                            </form>
+
+                        {% elif request.user.is_authenticated %}
+                            {# --- VISITOR / CLAIMANT CONTROLS --- #}
+                            <a href="{% url 'core:start_conversation' item.id %}" class="block w-full text-center bg-indigo-600 text-white py-5 border-4 border-black font-black uppercase tracking-widest text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all no-underline">
+                                <i class="fas fa-comments me-2"></i> Establish Contact
+                            </a>
+
+                            {% if active_claim %}
+                                <div class="mt-4 p-6 bg-[#1a1a2e] border-4 border-indigo-500 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                                    <p class="text-white font-black uppercase text-[10px] tracking-widest mb-4">
+                                        Item Recovered? Confirm to finalize handshake.
+                                    </p>
+                                    {% if not active_claim.claimant_confirmed %}
+                                    <form action="{% url 'core:confirm_resolution' active_claim.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" class="w-full bg-indigo-600 text-white py-3 border-2 border-black font-black uppercase text-xs tracking-tighter hover:bg-indigo-500 transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none">
+                                            Mark as Resolved
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <div class="bg-indigo-900/40 p-3 text-center border-2 border-dashed border-indigo-400">
+                                        <p class="text-white text-[10px] font-black uppercase m-0 italic">Awaiting Owner Verification...</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <form action="{% url 'core:claim_item' item.id %}" method="POST" class="mt-4">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full bg-transparent border-4 border-black dark:border-white text-black dark:text-white py-3 font-black uppercase text-[10px] tracking-widest hover:bg-[#4ADE80] hover:text-black transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                        Request Ownership
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                        {% else %}
+                            <a href="{% url 'core:login' %}?next={{ request.path }}" class="block w-full text-center bg-black text-white py-5 border-4 border-black font-black uppercase tracking-widest text-sm no-underline">
+                                Login to Interact
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# --- TRANSMISSION LOG (THE HANDSHAKE MONITOR) --- #}
+                {% if active_claim %}
+                <div class="bg-black text-[#4ADE80] p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] font-mono">
+                    <h6 class="text-[10px] font-black uppercase tracking-[0.2em] mb-4 border-b border-[#4ADE80]/30 pb-2 flex justify-between">
+                        <span>// TRANSMISSION_LOG</span>
+                        <span class="animate-pulse">● LIVE</span>
+                    </h6>
+                    <div class="space-y-2 text-[10px] leading-tight">
+                        <p><span class="opacity-50">[{{ active_claim.created_at|date:"H:i:s" }}]</span> HANDSHAKE_INITIATED</p>
+                        
+                        <div class="flex justify-between items-center py-1">
+                            <span>OWNER_SIG:</span>
+                            <span class="{% if active_claim.reporter_confirmed %}text-white{% else %}text-rose-500 opacity-50{% endif %}">
+                                [{% if active_claim.reporter_confirmed %}VERIFIED{% else %}PENDING{% endif %}]
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center py-1">
+                            <span>PEER_SIG:</span>
+                            <span class="{% if active_claim.claimant_confirmed %}text-white{% else %}text-rose-500 opacity-50{% endif %}">
+                                [{% if active_claim.claimant_confirmed %}VERIFIED{% else %}PENDING{% endif %}]
+                            </span>
+                        </div>
+
+                        <div class="h-1 bg-[#4ADE80]/20 w-full mt-3 overflow-hidden">
+                            <div class="h-full bg-[#4ADE80] transition-all duration-1000" 
+                                 style="width: {% if active_claim.reporter_confirmed and active_claim.claimant_confirmed %}100%{% elif active_claim.reporter_confirmed or active_claim.claimant_confirmed %}50%{% else %}10%{% endif %}"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# SAFETY CARD #}
+                <div class="bg-black dark:bg-white text-white dark:text-black p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(79,70,229,1)]">
+                    <h5 class="font-black uppercase text-xs tracking-[0.2em] mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-indigo-400"></i> Protocols
+                    </h5>
+                    <ul class="text-[10px] font-bold uppercase space-y-3 opacity-80 list-none p-0">
+                        <li class="flex gap-2"><span class="text-indigo-400">01.</span> Verify specific unique markings.</li>
+                        <li class="flex gap-2"><span class="text-indigo-400">02.</span> Exchange proof in public zones.</li>
+                        <li class="flex gap-2"><span class="text-indigo-400">03.</span> Document the exchange via app.</li>
+                    </ul>
+                </div>
+
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}

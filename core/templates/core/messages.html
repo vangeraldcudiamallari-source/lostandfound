@@ -1,0 +1,123 @@
+{% if messages %}
+<div class="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-full max-w-lg px-4 pointer-events-none">
+    <div class="space-y-4" id="alert-wrapper">
+        {% for message in messages %}
+        <div class="alert-message pointer-events-auto relative overflow-hidden flex items-center justify-between gap-4 px-6 py-5 border-[3px] border-slate-900 dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-500 brutalist-pop-in
+            {% if message.tags == 'success' %}
+                bg-emerald-400 text-slate-900
+            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                bg-rose-500 text-white
+            {% elif message.tags == 'warning' %}
+                bg-amber-400 text-slate-900
+            {% else %}
+                bg-indigo-600 text-white
+            {% endif %}"
+            role="alert">
+            
+            {# Progress Bar Timer #}
+            <div class="absolute bottom-0 left-0 h-1.5 bg-black/20 alert-progress"></div>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex-shrink-0 w-10 h-10 bg-black/10 border-2 border-slate-900 dark:border-white flex items-center justify-center">
+                    {% if message.tags == 'success' %}
+                        <i class="fa-solid fa-check"></i>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <i class="fa-solid fa-bolt"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fa-solid fa-exclamation"></i>
+                    {% else %}
+                        <i class="fa-solid fa-info"></i>
+                    {% endif %}
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-tighter opacity-70 leading-none mb-1">System Notification</span>
+                    <p class="text-[13px] font-black uppercase tracking-widest mb-0 leading-tight">
+                        {{ message }}
+                    </p>
+                </div>
+            </div>
+
+            <button type="button" 
+                    onclick="dismissAlert(this.closest('.alert-message'))"
+                    class="bg-white/20 hover:bg-white/40 border-2 border-slate-900 dark:border-white h-10 w-10 flex items-center justify-center transition-all cursor-pointer text-current active:translate-x-1 active:translate-y-1 active:shadow-none">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* Snappy Progress Animation */
+    .alert-progress {
+        width: 100%;
+        animation: shrink 4s linear forwards;
+    }
+
+    /* Pause animation on hover */
+    .alert-message:hover .alert-progress {
+        animation-play-state: paused;
+    }
+
+    @keyframes shrink {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+
+    .brutalist-pop-in {
+        animation: alertEnter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes alertEnter {
+        0% { transform: translate(-20px, -20px); opacity: 0; }
+        100% { transform: translate(0, 0); opacity: 1; }
+    }
+
+    /* Exit Animation Class */
+    .alert-exit {
+        opacity: 0 !important;
+        transform: translate(8px, 8px) !important;
+        box-shadow: none !important;
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    function dismissAlert(element) {
+        if (!element) return;
+        
+        // Add exit class for styling
+        element.classList.add('alert-exit');
+        
+        // Wait for transition to finish before removing from DOM
+        setTimeout(() => {
+            element.remove();
+        }, 500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('.alert-message');
+        
+        messages.forEach(msg => {
+            let autoDismiss;
+
+            const startTimer = () => {
+                autoDismiss = setTimeout(() => {
+                    dismissAlert(msg);
+                }, 4000); // Matches the 4s progress bar
+            };
+
+            const stopTimer = () => {
+                clearTimeout(autoDismiss);
+            };
+
+            // Initialize timer
+            startTimer();
+
+            // Pause auto-dismiss if user hovers over the message
+            msg.addEventListener('mouseenter', stopTimer);
+            msg.addEventListener('mouseleave', startTimer);
+        });
+    });
+</script>
+{% endif %}

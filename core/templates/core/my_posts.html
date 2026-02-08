@@ -1,0 +1,114 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+
+{% block title %}MY_SIGNALS // Found.it{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 dark:bg-[#020617] pt-28 pb-20 transition-colors duration-500">
+    <div class="max-w-7xl mx-auto px-4 relative z-10">
+        
+        {# --- HEADER SECTION --- #}
+        <header class="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-black text-black dark:text-white uppercase tracking-tighter m-0 leading-none mb-2">My_Broadcasts</h1>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 m-0">
+                    // Operational_Signals: <span class="text-indigo-600 dark:text-indigo-400">{{ items|length }}</span>
+                </p>
+            </div>
+            <a href="{% url 'core:report_item' %}" class="bg-indigo-600 text-white px-8 py-4 border-4 border-black dark:border-white font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all no-underline">
+                <i class="fas fa-plus me-2"></i>New_Broadcast
+            </a>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {% for item in items %}
+            <div class="group bg-white dark:bg-slate-900 border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all flex flex-col relative">
+                
+                {# TYPE BADGE #}
+                <div class="absolute top-4 left-4 z-20">
+                    <span class="{% if item.item_type == 'LOST' %}bg-rose-500{% else %}bg-[#4ADE80]{% endif %} text-black border-2 border-black px-3 py-1 text-[9px] font-black uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        {{ item.get_item_type_display }}
+                    </span>
+                </div>
+
+                {# IMAGE THUMBNAIL #}
+                <div class="relative h-48 border-b-4 border-black overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
+                            <i class="fas fa-microchip text-4xl"></i>
+                        </div>
+                    {% endif %}
+                    
+                    {% if item.status == 'resolved' %}
+                    <div class="absolute inset-0 bg-[#4ADE80]/20 backdrop-blur-[2px] flex items-center justify-center">
+                        <div class="bg-black text-[#4ADE80] px-4 py-2 border-2 border-[#4ADE80] font-black text-[10px] uppercase tracking-widest rotate-[-12deg]">
+                            ARCHIVED_SIGNAL
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# CARD BODY #}
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="mb-4">
+                        {% if item.status == 'pending_resolve' %}
+                            <span class="text-[9px] font-black uppercase tracking-widest text-amber-500 mb-2 block animate-pulse">
+                                <i class="fas fa-handshake me-1"></i>Handshake_In_Progress
+                            </span>
+                        {% elif item.status == 'resolved' %}
+                             <span class="text-[9px] font-black uppercase tracking-widest text-[#4ADE80] mb-2 block">
+                                <i class="fas fa-check-double me-1"></i>Resolution_Confirmed
+                            </span>
+                        {% else %}
+                            <span class="text-[9px] font-black uppercase tracking-widest text-indigo-500 mb-2 block">
+                                <i class="fas fa-broadcast-tower me-1"></i>Active_Broadcast
+                            </span>
+                        {% endif %}
+
+                        <h3 class="text-xl font-black text-black dark:text-white uppercase truncate mb-1">{{ item.title }}</h3>
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase m-0 flex items-center">
+                            <i class="fas fa-map-marker-alt me-1 text-indigo-600"></i>
+                            <span class="truncate">{{ item.location }}</span>
+                        </p>
+                    </div>
+
+                    {# ACTIONS #}
+                    <div class="mt-auto space-y-2">
+                        <div class="flex gap-2">
+                            {% if item.status != 'resolved' %}
+                            <a href="{% url 'core:item_edit' pk=item.pk %}" class="flex-1 text-center bg-white dark:bg-slate-800 border-2 border-black dark:border-white py-2 text-[10px] font-black uppercase no-underline text-black dark:text-white hover:bg-black hover:text-white transition-colors">
+                                <i class="fas fa-sync-alt me-1"></i> Update
+                            </a>
+                            {% endif %}
+                            
+                            <form action="{% url 'core:delete_item' pk=item.pk %}" method="POST" class="m-0 p-0 {% if item.status == 'resolved' %}w-full{% else %}flex-none{% endif %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full h-full px-4 py-2 bg-rose-500 text-white border-2 border-black dark:border-white hover:bg-black transition-colors cursor-pointer" onclick="return confirm('WARNING: Permanent deletion of signal. Proceed?')">
+                                    <i class="fas fa-trash-alt"></i>
+                                    {% if item.status == 'resolved' %}<span class="ms-2 text-[10px] font-black uppercase">Purge_Archive</span>{% endif %}
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <a href="{% url 'core:item_detail' pk=item.pk %}" class="block text-center bg-slate-100 dark:bg-slate-800 border-2 border-black dark:border-white py-2 text-[10px] font-black uppercase no-underline text-slate-600 dark:text-slate-300 hover:bg-indigo-600 hover:text-white transition-all">
+                            Access Intel_Report <i class="fas fa-chevron-right ms-1 text-[8px]"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-20 border-4 border-dashed border-slate-300 dark:border-slate-700 text-center bg-white dark:bg-slate-900/50">
+                <i class="fas fa-satellite text-5xl text-slate-300 mb-6 block"></i>
+                <h3 class="text-2xl font-black text-black dark:text-white uppercase">Silence_Detected</h3>
+                <p class="text-slate-500 font-bold uppercase text-[10px] mb-8">// No active signals on your frequency.</p>
+                <a href="{% url 'core:report_item' %}" class="inline-block bg-black dark:bg-indigo-600 text-white px-8 py-4 border-4 border-black dark:border-white font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-colors">
+                    Initialize_Broadcast
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

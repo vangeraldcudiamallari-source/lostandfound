@@ -1,0 +1,189 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ item.title }} | Lost & Found{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50/50 dark:bg-slate-950 pt-28 pb-12 transition-colors duration-500">
+    <div class="max-w-6xl mx-auto px-4">
+        
+        {# --- TOP NAVIGATION & STATUS --- #}
+        <nav class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <a href="{% url 'core:home' %}" class="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold text-sm no-underline transition-all group">
+                <div class="w-8 h-8 rounded-full bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center group-hover:shadow-md transition-all">
+                    <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
+                </div>
+                Back to All Listings
+            </a>
+            
+            <div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-2xl border-2 border-slate-900 dark:border-slate-700 shadow-sm">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</span>
+                <span class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter {% if item.status == 'active' %}bg-emerald-500 text-white shadow-lg shadow-emerald-200 dark:shadow-none{% else %}bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300{% endif %}">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                    {{ item.get_status_display }}
+                </span>
+            </div>
+        </nav>
+
+        {# --- AUTO-DISMISSING MESSAGES --- #}
+        <div id="message-container">
+            {% include 'core/messages.html' %}
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+            
+            {# --- LEFT COLUMN: CONTENT --- #}
+            <div class="lg:w-2/3 w-full space-y-8">
+                {# MAIN IMAGE HERO #}
+                <div class="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border-2 border-slate-900 dark:border-slate-800 overflow-hidden relative group">
+                    {% if item.image %}
+                        <div class="overflow-hidden bg-slate-100 dark:bg-slate-800">
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" 
+                                 class="w-full h-[550px] object-cover transition-transform duration-1000 group-hover:scale-110 cursor-zoom-in"
+                                 onclick="window.open(this.src, '_blank')">
+                        </div>
+                    {% else %}
+                        <div class="w-full h-[400px] bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center text-slate-300">
+                            <i class="fa-solid fa-image text-7xl mb-4 opacity-10"></i>
+                            <p class="font-black uppercase tracking-widest text-xs opacity-40">No Reference Image</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="absolute top-8 left-8">
+                        <span class="px-6 py-2.5 {% if item.item_type|upper == 'LOST' %}bg-rose-500{% else %}bg-indigo-600{% endif %} text-white text-[11px] font-black rounded-2xl border-2 border-slate-900 uppercase tracking-[0.2em]">
+                            {{ item.get_item_type_display }}
+                        </span>
+                    </div>
+                </div>
+
+                {# TEXT CONTENT #}
+                <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 md:p-12 shadow-sm border-2 border-slate-100 dark:border-slate-800 relative">
+                    <div class="mb-10">
+                        <div class="flex items-center gap-2 mb-6">
+                            <span class="h-1 w-12 bg-indigo-600 rounded-full"></span>
+                            <span class="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">Description & Details</span>
+                        </div>
+
+                        {# SOLID OUTLINE TITLE CONTAINER #}
+                        <div class="border-4 border-slate-900 dark:border-white p-6 md:p-8 rounded-3xl mb-8">
+                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-[1.1] tracking-tighter m-0">
+                                {{ item.title }}
+                            </h1>
+                        </div>
+
+                        <div class="flex flex-wrap gap-3">
+                             <div class="flex items-center gap-2 text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-100 px-5 py-3 rounded-2xl border-2 border-slate-900 dark:border-slate-700">
+                                <i class="fa-solid fa-location-dot text-indigo-500"></i> {{ item.location }}
+                             </div>
+                             <div class="flex items-center gap-2 text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-100 px-5 py-3 rounded-2xl border-2 border-slate-900 dark:border-slate-700">
+                                <i class="fa-solid fa-calendar-day text-indigo-500"></i> {{ item.date_happened|date:"M d, Y" }}
+                             </div>
+                        </div>
+                    </div>
+
+                    {# SOLID OUTLINE DESCRIPTION CONTAINER #}
+                    <div class="border-2 border-slate-900 dark:border-slate-700 p-8 rounded-[2rem] bg-slate-50/50 dark:bg-slate-800/30">
+                        <div class="item-description-text text-slate-700 dark:text-slate-100 text-lg leading-relaxed antialiased font-medium">
+                            {{ item.description|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# --- RIGHT COLUMN: SIDEBAR --- #}
+            <aside class="lg:w-1/3 w-full sticky top-28">
+                <div class="space-y-6">
+                    
+                    {# REPORTER CARD - BRUTALIST #}
+                    <div class="bg-white dark:bg-slate-900 border-4 border-slate-900 dark:border-white rounded-[2.5rem] p-8 transition-all duration-300">
+                        <div class="flex items-center gap-4 mb-10">
+                            <div class="w-16 h-16 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl flex items-center justify-center font-black text-2xl">
+                                {{ item.user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Posted By</p>
+                                <p class="text-slate-900 dark:text-white font-black text-lg mb-0">@{{ item.user.username }}</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            {% if item.status == 'resolved' %}
+                                <div class="p-6 bg-emerald-500 border-4 border-slate-900 dark:border-emerald-400 rounded-[2rem] text-center text-white">
+                                    <i class="fa-solid fa-handshake text-2xl mb-2"></i>
+                                    <h4 class="font-black text-xs uppercase tracking-[0.2em] m-0">Resolved</h4>
+                                </div>
+
+                            {% elif is_owner %}
+                                <div class="flex flex-col gap-4">
+                                    <a href="{% url 'core:item_update' pk=item.pk %}" class="flex items-center justify-center gap-3 w-full py-4 bg-indigo-600 border-4 border-slate-900 dark:border-indigo-400 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all no-underline group hover:bg-indigo-700">
+                                        <i class="fa-solid fa-pen-to-square group-hover:rotate-12 transition-transform"></i> Edit Listing
+                                    </a>
+                                    
+                                    <form action="{% url 'core:delete_item' pk=item.pk %}" method="POST" onsubmit="return confirm('Permanently delete this post?');" class="w-full">
+                                        {% csrf_token %}
+                                        <button type="submit" class="group flex items-center justify-center gap-2 w-full py-3 bg-transparent border-4 border-rose-600 text-rose-600 hover:bg-rose-600 hover:text-white transition-all rounded-2xl font-black text-[10px] uppercase tracking-widest cursor-pointer">
+                                            <i class="fa-solid fa-trash-can opacity-70 group-hover:opacity-100 transition-opacity"></i> 
+                                            Delete Post
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {% if active_claim %}
+                                    <div class="mt-4 p-6 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-500 rounded-[2rem] text-center">
+                                        <h5 class="text-amber-800 dark:text-amber-400 font-black text-[10px] uppercase tracking-widest mb-3">Claim Request</h5>
+                                        <form action="{% url 'core:confirm_resolution' request_id=active_claim.pk %}" method="POST">
+                                            {% csrf_token %}
+                                            <button type="submit" class="w-full py-4 bg-amber-500 border-2 border-slate-900 text-white rounded-2xl font-black text-[10px] transition-all uppercase tracking-widest">
+                                                Confirm Handover
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+
+                            {% elif request.user.is_authenticated %}
+                                <a href="{% url 'core:start_conversation' item_id=item.pk %}" class="flex items-center justify-center gap-3 w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-4 border-indigo-600 rounded-[1.5rem] font-black text-sm uppercase tracking-widest hover:-translate-y-1 transition-all no-underline">
+                                    <i class="fa-solid fa-comment-dots text-lg"></i> Send Message
+                                </a>
+
+                                {% if not active_claim %}
+                                    <form action="{% url 'core:claim_item' item_id=item.pk %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" class="w-full mt-3 py-4 bg-transparent border-4 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-amber-500 transition-all">
+                                            ✋ Claim This Item
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# SAFETY CARD - BRUTALIST #}
+                    <div class="p-8 bg-indigo-50 dark:bg-slate-900 border-4 border-slate-900 dark:border-indigo-500 rounded-[2.5rem] group">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fa-solid fa-shield-halved text-indigo-600 dark:text-indigo-400"></i>
+                            <h5 class="font-black text-[10px] uppercase tracking-[0.2em] text-slate-900 dark:text-white">Safety Center</h5>
+                        </div>
+                        <p class="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed font-black">
+                            Always meet in <span class="bg-indigo-200 dark:bg-indigo-900 px-1">public places</span>. Ask for proof before meeting.
+                        </p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('#message-container .alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                alert.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                alert.style.opacity = "0";
+                alert.style.transform = "translateY(-10px)";
+                setTimeout(() => alert.remove(), 600);
+            }, 3000);
+        });
+    });
+</script>
+{% endblock %}

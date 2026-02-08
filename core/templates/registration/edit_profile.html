@@ -1,0 +1,142 @@
+{% extends 'core/base.html' %}
+
+{% block title %}User_Profile | Found.it{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 dark:bg-[#020617] pt-28 pb-20 transition-colors duration-500">
+    <div class="max-w-4xl mx-auto px-4 relative z-10">
+        
+        {# --- PROFILE HEADER --- #}
+        <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-8 mb-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.05)] flex flex-col md:flex-row items-center gap-8">
+            
+            {# AVATAR BOX #}
+            <div class="relative group">
+                <div class="w-32 h-32 border-4 border-black dark:border-white bg-indigo-600 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)]">
+                    {% if user.profile.image %}
+                        <img src="{{ user.profile.image.url }}" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-white bg-indigo-900">
+                            <i class="fas fa-user-secret text-5xl"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="absolute -bottom-2 -right-2 bg-black dark:bg-white text-white dark:text-black text-[9px] font-black px-2 py-1 border-2 border-black">
+                    ID_USR_{{ user.id|add:"1000" }}
+                </div>
+            </div>
+
+            {# USER INTEL #}
+            <div class="text-center md:text-left flex-grow">
+                <h1 class="text-4xl font-black text-black dark:text-white uppercase tracking-tighter mb-1 leading-none">
+                    {{ user.username }}
+                </h1>
+                <p class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-5">
+                    // Sector_Member_Since: {{ user.date_joined|date:"Y.m.d" }}
+                </p>
+                
+                <div class="flex flex-wrap justify-center md:justify-start gap-3">
+                    <div class="px-3 py-1 bg-slate-100 dark:bg-slate-800 border-2 border-black dark:border-white text-[9px] font-black uppercase tracking-widest text-black dark:text-white">
+                        <i class="fas fa-signal me-1 text-indigo-600"></i> Signals: {{ user.reported_items.count|default:"0" }}
+                    </div>
+                    <div class="px-3 py-1 bg-slate-100 dark:bg-slate-800 border-2 border-black dark:border-white text-[9px] font-black uppercase tracking-widest text-black dark:text-white">
+                        <i class="fas fa-shield-halved me-1 text-emerald-500"></i> Auth: Verified
+                    </div>
+                </div>
+            </div>
+
+            {# ACTIONS #}
+            <div class="flex flex-col gap-3 w-full md:w-auto">
+                <a href="{% url 'core:edit_profile' %}" class="block text-center bg-indigo-600 text-white border-2 border-black px-6 py-3 text-[10px] font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all no-underline">
+                    Edit_Identity
+                </a>
+            </div>
+        </div>
+
+        {# --- STATS GRID --- #}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            
+            {# COMMUNICATION PANEL #}
+            <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.05)]">
+                <h3 class="text-xs font-black uppercase tracking-widest text-black dark:text-white mb-6 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-indigo-600"></span> Communication_Link
+                </h3>
+                <div class="space-y-5">
+                    <div>
+                        <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Primary_Email</label>
+                        <p class="text-sm font-bold text-black dark:text-white truncate">{{ user.email }}</p>
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Phone_Broadcaster</label>
+                        <p class="text-sm font-bold text-black dark:text-white">
+                            {{ user.profile.phone|default:"-- LINK_NOT_ESTABLISHED --" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {# SECURITY LOG PANEL #}
+            <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.05)]">
+                <h3 class="text-xs font-black uppercase tracking-widest text-black dark:text-white mb-6 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-emerald-500"></span> Session_Diagnostics
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Terminal_Status</span>
+                        <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Active</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Last_Broadcast</span>
+                        <span class="text-[10px] font-black text-black dark:text-white uppercase">{{ user.last_login|date:"H:i | M d" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Security_Level</span>
+                        <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase">Tier_01</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# --- RECENT SIGNALS --- #}
+        <div class="mb-6 flex items-center gap-4">
+            <h2 class="text-xs font-black uppercase tracking-[0.4em] text-black dark:text-white">Signal_History</h2>
+            <div class="h-1 flex-grow bg-black dark:bg-white opacity-10"></div>
+        </div>
+
+        <div class="grid gap-4">
+            {% for item in user.reported_items.all|dictsortreversed:"created_at"|slice:":5" %}
+            <div class="flex items-center justify-between bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-5 group hover:border-indigo-600 dark:hover:border-indigo-500 transition-all hover:-translate-y-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(79,70,229,0.2)]">
+                <div class="flex items-center gap-5">
+                    <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 border-2 border-black dark:border-slate-700 flex items-center justify-center">
+                        {% if item.item_type == 'lost' %}
+                            <i class="fas fa-search-minus text-rose-500"></i>
+                        {% else %}
+                            <i class="fas fa-hand-holding-heart text-emerald-500"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 class="text-[11px] font-black uppercase text-black dark:text-white m-0 tracking-tight">{{ item.title }}</h4>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase m-0 tracking-tighter">
+                            {{ item.created_at|date:"Y.m.d" }} // {{ item.location|truncatechars:20 }}
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'core:item_detail' pk=item.pk %}" class="bg-black dark:bg-white text-white dark:text-black px-3 py-1 border-2 border-black text-[9px] font-black uppercase tracking-widest no-underline hover:bg-indigo-600 hover:text-white transition-colors">
+                    Access_Log
+                </a>
+            </div>
+            {% empty %}
+            <div class="text-center py-16 border-4 border-dashed border-slate-200 dark:border-slate-800">
+                <i class="fas fa-ghost text-slate-300 dark:text-slate-700 text-3xl mb-4"></i>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">No active signal history detected in this sector.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# SYSTEM FOOTER #}
+        <div class="mt-20 text-center opacity-20">
+            <p class="text-[8px] font-mono text-black dark:text-white uppercase tracking-[1em]">End_Of_Dossier</p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

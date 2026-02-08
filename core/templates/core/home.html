@@ -1,0 +1,168 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Explore Listings | Found.it{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 dark:bg-[#020617] pt-28 pb-20 transition-colors duration-500">
+    <div class="max-w-7xl mx-auto px-4 relative z-10">
+        
+        {# --- HEADER SECTION --- #}
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+            <div>
+                <div class="flex items-center gap-4 mb-2">
+                    <span class="w-12 h-3 bg-indigo-600 animate-pulse"></span>
+                    <span class="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">System Live</span>
+                </div>
+                <h1 class="text-6xl md:text-8xl font-black tracking-tighter uppercase mb-2 dark:text-white leading-none">
+                    Live <span class="text-indigo-600 dark:text-indigo-400">Feed</span>
+                </h1>
+                <p class="text-xs font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                    <i class="fas fa-microchip opacity-50"></i>
+                    {% if items %}
+                        Tracking: {{ items|length }} Active Signal{{ items|length|pluralize }} detected
+                    {% else %}
+                        Status: No active signals in range
+                    {% endif %}
+                </p>
+            </div>
+            {# FIXED: Changed from report_item_wizard to report_item to match your updated urls.py #}
+            <a href="{% url 'core:report_item' %}" class="group relative bg-indigo-600 text-white px-10 py-5 border-4 border-black font-black text-sm uppercase tracking-[0.2em] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all no-underline overflow-hidden">
+                <span class="relative z-10"><i class="fas fa-plus me-2 group-hover:rotate-90 transition-transform"></i>Report Item</span>
+            </a>
+        </div>
+
+        {# --- SEARCH & FILTER BAR --- #}
+        <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-8 mb-16 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(79,70,229,0.2)]">
+            <form method="GET" action="{% url 'core:home' %}" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+                <div class="lg:col-span-5 flex flex-col gap-3">
+                    <label class="text-[10px] font-black uppercase tracking-widest ml-1 dark:text-white flex items-center gap-2">
+                        <span class="w-2 h-2 bg-black dark:bg-white"></span> Search Database
+                    </label>
+                    <div class="relative">
+                        <input type="text" name="q" placeholder="Keywords, locations..." value="{{ query|default:'' }}"
+                               class="w-full bg-slate-50 dark:bg-slate-800 border-4 border-black dark:border-white p-5 font-black text-sm focus:bg-white dark:focus:bg-slate-700 transition-colors focus:outline-none dark:text-white placeholder:opacity-30">
+                        <i class="fas fa-search absolute right-5 top-1/2 -translate-y-1/2 opacity-20"></i>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 flex flex-col gap-3">
+                    <label class="text-[10px] font-black uppercase tracking-widest ml-1 dark:text-white flex items-center gap-2">
+                        <span class="w-2 h-2 bg-black dark:bg-white"></span> Signal Type
+                    </label>
+                    <div class="relative">
+                        <select name="item_type_filter" class="w-full bg-slate-50 dark:bg-slate-800 border-4 border-black dark:border-white p-5 font-black text-sm appearance-none dark:text-white cursor-pointer focus:bg-white dark:focus:bg-slate-700">
+                            <option value="ALL">All Signals</option>
+                            <option value="LOST" {% if item_type_filter == 'LOST' %}selected{% endif %}>Lost Records</option>
+                            <option value="FOUND" {% if item_type_filter == 'FOUND' %}selected{% endif %}>Found Records</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-40"></i>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 flex flex-col gap-3">
+                    <label class="text-[10px] font-black uppercase tracking-widest ml-1 dark:text-white flex items-center gap-2">
+                        <span class="w-2 h-2 bg-black dark:bg-white"></span> Status
+                    </label>
+                    <div class="relative">
+                        <select name="status_filter" class="w-full bg-slate-50 dark:bg-slate-800 border-4 border-black dark:border-white p-5 font-black text-sm appearance-none dark:text-white cursor-pointer focus:bg-white dark:focus:bg-slate-700">
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Signals</option>
+                            <option value="pending_resolve" {% if status_filter == 'pending_resolve' %}selected{% endif %}>Claim Pending</option>
+                            <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Archived/Resolved</option>
+                            <option value="ALL" {% if status_filter == 'ALL' %}selected{% endif %}>All Records</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-40"></i>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <button type="submit" class="w-full bg-black dark:bg-white text-white dark:text-black py-6 border-4 border-black dark:border-white font-black uppercase text-xs hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 transition-all active:translate-y-1">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {# --- GRID SECTION --- #}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
+            {% for item in items %}
+            <div class="group bg-white dark:bg-slate-900 border-4 border-black dark:border-white shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)] hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[15px_15px_0px_0px_rgba(79,70,229,1)] transition-all overflow-hidden flex flex-col relative">
+                
+                {# Type Badge (Overlay) #}
+                <div class="absolute top-4 left-4 z-20">
+                    <span class="{% if item.item_type == 'LOST' %}bg-rose-500{% else %}bg-emerald-500{% endif %} text-white border-2 border-black px-4 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        {{ item.get_item_type_display }}
+                    </span>
+                </div>
+
+                {# Image Container #}
+                <div class="relative h-64 border-b-4 border-black dark:border-white overflow-hidden bg-slate-200">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" alt="{{ item.title }}">
+                    {% else %}
+                        <div class="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-100 dark:bg-slate-800">
+                            <i class="fas fa-ghost fa-3x mb-3 opacity-20"></i>
+                            <span class="text-[9px] font-black uppercase tracking-widest opacity-40">No Visual Intel</span>
+                        </div>
+                    {% endif %}
+                    <div class="absolute inset-0 bg-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                </div>
+
+                {# Content Body #}
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="mb-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-tighter">ID: #{{ item.pk|stringformat:"05d" }}</span>
+                            {% if item.status != 'active' %}
+                            <span class="text-[9px] font-black uppercase px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-600/20">
+                                {{ item.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <h3 class="text-2xl font-black uppercase tracking-tighter leading-tight mb-4">
+                            <a href="{% url 'core:item_detail' pk=item.pk %}" class="text-black dark:text-white no-underline hover:text-indigo-600 transition-colors">
+                                {{ item.title|truncatechars:22 }}
+                            </a>
+                        </h3>
+
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                <i class="fas fa-map-marker-alt mt-0.5 text-black dark:text-white"></i>
+                                <span>{{ item.location|truncatechars:35 }}</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                <i class="far fa-calendar-alt text-black dark:text-white"></i>
+                                <span>{{ item.date_happened|date:"d M Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Action Buttons #}
+                    <div class="mt-auto pt-6 border-t-4 border-black dark:border-white/10 flex gap-3">
+                        {% if request.user.is_authenticated and request.user == item.user %}
+                            <a href="{% url 'core:item_edit' pk=item.pk %}" class="flex-grow bg-slate-100 dark:bg-slate-800 text-black dark:text-white text-center py-3 text-[10px] font-black uppercase border-4 border-black dark:border-white hover:bg-black hover:text-white transition-all no-underline shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                        {% else %}
+                            <a href="{% url 'core:item_detail' pk=item.pk %}" class="flex-grow bg-indigo-600 text-white text-center py-4 text-[10px] font-black uppercase border-4 border-black hover:bg-black transition-all no-underline shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none flex items-center justify-center gap-2">
+                                <span>Establish Contact</span> <i class="fas fa-arrow-right text-[8px]"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full border-8 border-black dark:border-white p-24 text-center bg-white dark:bg-slate-900 shadow-[20px_20px_0px_0px_rgba(0,0,0,0.05)]">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-slate-100 dark:bg-slate-800 border-4 border-black dark:border-white mb-8 rotate-3">
+                    <i class="fas fa-satellite-dish text-4xl text-black dark:text-white animate-bounce"></i>
+                </div>
+                <h3 class="text-4xl font-black uppercase tracking-tighter mb-4 dark:text-white">Zero Signals Intercepted</h3>
+                <p class="text-slate-500 font-bold uppercase text-xs tracking-[0.4em] mb-12 max-w-md mx-auto leading-relaxed">The database returned no matches for your current tracking parameters. Re-calibrate filters.</p>
+                <a href="{% url 'core:home' %}" class="inline-block border-4 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-12 py-5 font-black uppercase text-sm tracking-widest hover:bg-indigo-600 hover:text-white transition-all no-underline shadow-[8px_8px_0px_0px_rgba(79,70,229,1)]">
+                    Reset System
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% for item in items_with_time %}
+<div class="item-card">
+    <img src="{{ item.image_url }}" alt="{{ item.name }}">
+
+    <div class="status-badge status-{{ item.status | lower }}">
+        {{ item.status | upper }}
+    </div>
+
+    <div class="report-date">{{ item.relative_time }}</div>
+    
+    <div class="item-details">
+        <h3 class="item-name">{{ item.name | upper }} ({{ item.category }})</h3>
+
+        <p class="brand-info">
+            BRAND: <strong>{{ item.brand | upper }}</strong> | COLOR: <strong>{{ item.color | upper }}</strong>
+        </p>
+
+        <p class="location-info">
+            <span class="icon">📍</span> {{ item.location }}
+        </p>
+
+        <div class="item-actions">
+
+            {% if current_user.is_authenticated %}
+                
+                {% if current_user.id == item.reporter_id %}
+                    <p class="contact-info">You reported this item.</p>
+                    <div class="reporter-actions">
+                        
+                        <form method="POST" action="{{ url_for('confirm_resolution', item_id=item.id) }}">
+                            <button type="submit" class="resolve-btn">
+                                Resolve / Confirm Return
+                            </button>
+                        </form>
+
+                        <form method="POST" action="{{ url_for('delete_item', item_id=item.id) }}">
+                            <button type="submit" class="delete-btn">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+
+                {% else %}
+                    <p class="contact-info">Contact: <strong>Secure messaging via platform</strong></p>
+                    <a href="{{ url_for('initiate_contact', item_id=item.id) }}" class="contact-btn">
+                        ✉️ Contact Reporter Securely
+                    </a>
+                {% endif %}
+
+            {% else %}
+                <p class="contact-info">
+                    Log in to contact the reporter securely.
+                </p>
+                <button class="contact-btn" disabled>
+                    Log In to Contact
+                </button>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endfor %}

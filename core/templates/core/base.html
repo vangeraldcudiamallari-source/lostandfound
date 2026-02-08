@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lost & Found{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#4a00e0',
+                        cyber: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply font-sans selection:bg-brand selection:text-white;
+            }
+        }
+        .brutalist-shadow {
+            @apply shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)];
+        }
+        .cyber-border {
+            @apply border-2 border-black dark:border-white;
+        }
+        @keyframes popInCentered {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .notification-center {
+            animation: popInCentered 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white transition-colors duration-300">
+
+    {# --- HTMX NOTIFICATION POLLER --- #}
+    {% if user.is_authenticated %}
+        <div hx-get="{% url 'core:check_notifications' %}" 
+             hx-trigger="every 10s" 
+             hx-target="#notification-list" 
+             hx-swap="beforeend" 
+             class="hidden">
+        </div>
+    {% endif %}
+
+    {# --- NAVBAR --- #}
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-b-4 border-black dark:border-white h-20">
+        <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+            
+            <a href="{% url 'core:home' %}" class="flex items-center gap-2 group no-underline">
+                <div class="bg-brand border-2 border-black p-1 brutalist-shadow group-hover:translate-x-[-2px] transition-all">
+                    <i class="fas fa-search-location text-white text-xl"></i>
+                </div>
+                <div class="flex flex-col leading-none">
+                    <span class="font-black text-2xl tracking-tighter uppercase dark:text-white">FOUND.IT</span>
+                    <span class="text-[8px] font-bold text-indigo-600 dark:text-indigo-400 tracking-[0.2em] uppercase">Global_Network</span>
+                </div>
+            </a>
+
+            <div class="flex items-center gap-4 md:gap-6">
+                <div class="hidden lg:flex items-center gap-6 mr-4 border-r-2 border-slate-200 dark:border-slate-800 pr-6">
+                    <a href="{% url 'core:home' %}" class="text-[10px] font-black uppercase tracking-widest hover:text-brand transition-colors no-underline text-current">Archive</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'core:dashboard' %}" class="text-[10px] font-black uppercase tracking-widest hover:text-brand transition-colors no-underline text-current">Terminal</a>
+                        <a href="{% url 'core:inbox' %}" class="text-[10px] font-black uppercase tracking-widest hover:text-brand transition-colors no-underline text-current">Comms</a>
+                    {% endif %}
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="hidden md:flex items-center gap-3 bg-slate-100 dark:bg-slate-800 p-1 pr-4 border-2 border-black dark:border-white">
+                    <div class="w-8 h-8 bg-black dark:bg-slate-700 flex items-center justify-center overflow-hidden">
+                        {% if user.profile.image %}
+                            <img src="{{ user.profile.image.url }}" class="w-full h-full object-cover grayscale">
+                        {% else %}
+                            <i class="fas fa-user-circle text-white dark:text-slate-400 text-sm"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black uppercase leading-none">{{ user.username }}</span>
+                        <span class="text-[7px] font-bold text-indigo-500 uppercase tracking-tighter">
+                            LVL_{{ user.id|add:10 }} // TRST: {{ user.profile.trust_score|default:"100" }}%
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <button id="theme-toggle" type="button" class="w-10 h-10 flex items-center justify-center border-2 border-black dark:border-white bg-white dark:bg-slate-800 brutalist-shadow hover:translate-x-[-2px] transition-all focus:outline-none">
+                    <i id="theme-toggle-dark-icon" class="fas fa-moon hidden text-indigo-600"></i>
+                    <i id="theme-toggle-light-icon" class="fas fa-sun hidden text-amber-400"></i>
+                </button>
+
+                {% if user.is_authenticated %}
+                    <form action="{% url 'core:logout' %}" method="post" class="m-0 hidden md:block">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-rose-600 text-white px-4 py-2 text-[10px] font-black uppercase tracking-tighter border-2 border-black brutalist-shadow hover:bg-black transition-all cursor-pointer">
+                            Disconnect
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="hidden md:flex items-center gap-4">
+                        <a href="{% url 'core:login' %}" class="text-[10px] font-black uppercase tracking-widest no-underline text-current">Login</a>
+                        <a href="{% url 'core:signup' %}" class="bg-black dark:bg-white text-white dark:text-black px-6 py-2 border-2 border-black dark:border-white font-black uppercase text-[10px] brutalist-shadow hover:translate-y-[-2px] transition-all no-underline">
+                            Initialize
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {# --- GLOBAL NOTIFICATION CONTAINER --- #}
+    <div id="notification-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] w-full max-w-md px-4 pointer-events-none">
+        <div class="flex flex-col gap-3" id="notification-list">
+            {% if messages %}
+                {% for message in messages %}
+                    {% include 'partials/notification_item.html' %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <main class="min-h-screen pt-24">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white dark:bg-slate-900 border-t-4 border-black dark:border-white py-12 mt-20 relative overflow-hidden">
+        <div class="absolute -bottom-4 -left-4 text-9xl font-black text-slate-100 dark:text-slate-800/20 pointer-events-none select-none">FOUND</div>
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+            <div class="text-center md:text-left">
+                <p class="font-black uppercase tracking-widest text-lg">Found.it // <span class="text-indigo-600">Root</span></p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
+                    &copy; 2026 Lost & Found Network. All packets secure.
+                </p>
+            </div>
+            <div class="flex gap-4">
+                <a href="#" class="w-10 h-10 border-2 border-black dark:border-white flex items-center justify-center hover:bg-brand hover:text-white transition-all brutalist-shadow">
+                    <i class="fab fa-github"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- DARK MODE ---
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            themeToggleLightIcon?.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon?.classList.remove('hidden');
+        }
+
+        themeToggleBtn?.addEventListener('click', function() {
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        });
+
+        // --- NOTIFICATION LOGIC ---
+        function initNotifications() {
+            const list = document.getElementById('notification-list');
+            if (!list) return;
+
+            const seen = new Set();
+            const items = list.querySelectorAll('.notification-center');
+
+            items.forEach(msg => {
+                // Deduplicate based on the inner span text (the actual message)
+                const text = msg.querySelector('span')?.innerText.trim();
+                
+                if (text && seen.has(text)) {
+                    msg.remove(); 
+                    return;
+                }
+                seen.add(text);
+
+                // Auto-hide logic
+                if (!msg.dataset.initialized) {
+                    msg.dataset.initialized = "true";
+                    setTimeout(() => {
+                        msg.style.opacity = '0';
+                        msg.style.transform = 'translateY(-20px)';
+                        msg.style.transition = 'all 0.4s ease';
+                        setTimeout(() => msg.remove(), 400);
+                    }, 5000);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initNotifications);
+        document.body.addEventListener('htmx:afterOnLoad', initNotifications);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

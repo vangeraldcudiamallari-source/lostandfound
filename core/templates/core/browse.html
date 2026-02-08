@@ -1,0 +1,230 @@
+/* ==========================================================
+   0. THEME AWARENESS & VARIABLE MAPPING 
+   ========================================================== */
+:root {
+    --brand-color: #4a00e0;
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-light: rgba(99, 102, 241, 0.1);
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    
+    /* Light Theme */
+    --text-dark: #0f172a;      
+    --text-medium: #475569;    
+    --text-light: #94a3b8;
+    --border-color: #e2e8f0;
+    --bg-light: #f8fafc;
+    --white: #ffffff;
+    --card-bg: #ffffff;
+    --input-bg: #f8fafc;       
+    --nav-bg: rgba(255, 255, 255, 0.85);
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+.dark {
+    --text-dark: #f8fafc;
+    --text-medium: #cbd5e1; /* Lightened for better contrast */
+    --text-light: #64748b;
+    --border-color: #1e293b;
+    --bg-light: #020617;
+    --white: #0f172a;
+    --card-bg: #0f172a;
+    --input-bg: #1e293b;
+    --primary-light: rgba(99, 102, 241, 0.15);
+    --nav-bg: rgba(2, 6, 23, 0.95);
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.6);
+}
+
+/* ==========================================================
+   1. GLOBAL RESETS & BASE 
+   ========================================================== */
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.content-wrapper {
+    padding-top: 100px;
+    position: relative;
+    z-index: 1; /* Keep content below navbar z-index */
+}
+
+/* ==========================================================
+   2. NAVIGATION & CLICKABLE DROPDOWNS
+   ========================================================== */
+.glass-nav {
+    background-color: var(--nav-bg) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1050 !important; /* Ensure it is above all reporting elements */
+}
+
+/* Bootstrap Dropdown Styling */
+.nav-dropdown-menu {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-xl) !important;
+    border-radius: 1.25rem !important;
+    padding: 0.75rem !important;
+    margin-top: 0.5rem !important;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.dropdown-item {
+    transition: all 0.2s ease;
+    border-radius: 0.75rem !important;
+}
+
+/* ==========================================================
+   3. FORM CONTROLS (Modern Wizard Style)
+   ========================================================== */
+.form-label-custom {
+    font-size: 11px;
+    font-weight: 800; 
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+}
+
+.input-custom {
+    background-color: var(--input-bg);
+    color: var(--text-dark);
+    border: 2px solid transparent;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.input-custom:focus {
+    border-color: var(--primary-color);
+    background-color: var(--card-bg);
+    box-shadow: 0 0 0 4px var(--primary-light);
+    outline: none;
+}
+
+/* ==========================================================
+   4. ENHANCED ITEM CARDS 
+   ========================================================== */
+.item-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 2.5rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.item-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.item-card img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    transition: filter 0.3s ease;
+}
+
+.dark .item-card img {
+    filter: brightness(0.7) contrast(1.1);
+}
+
+/* ==========================================================
+   5. STATUS BADGES
+   ========================================================== */
+.badge-custom {
+    padding: 6px 14px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 12px;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.badge-lost { background: var(--warning-color); color: white; }
+.badge-found { background: var(--primary-color); color: white; }
+
+/* ==========================================================
+   6. ANIMATIONS & LOADING
+   ========================================================== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.skeleton {
+    background: var(--border-color);
+    background-image: linear-gradient(
+        90deg, 
+        var(--border-color) 25%, 
+        var(--bg-light) 50%, 
+        var(--border-color) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 2s infinite linear;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ==========================================================
+   7. DASHBOARD & UI ELEMENTS
+   ========================================================== */
+.dashboard-empty-card {
+    background: var(--card-bg);
+    border: 2px dashed var(--border-color);
+    border-radius: 2rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.dashboard-empty-card:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+    transform: scale(1.01);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+    border: 3px solid var(--bg-light);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-light);
+}

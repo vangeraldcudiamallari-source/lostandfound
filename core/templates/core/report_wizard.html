@@ -1,0 +1,140 @@
+{% extends 'core/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Initialize Broadcast | Found.it{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 dark:bg-[#020617] pt-28 pb-20 transition-colors duration-500">
+    <div class="max-w-3xl mx-auto px-4 relative z-10">
+        
+        {# --- WIZARD HEADER --- #}
+        <header class="mb-12 text-center">
+            <div class="inline-block bg-indigo-600 text-white px-4 py-1 border-2 border-black font-black text-[10px] uppercase tracking-[0.3em] mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                System_Initialization
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black text-black dark:text-white tracking-tighter uppercase m-0 leading-none">
+                {% if step == '1' %}New_Broadcast{% else %}Signal_Review{% endif %}
+            </h1>
+            
+            {# PROGRESS BAR #}
+            <div class="mt-8 max-w-xs mx-auto">
+                <div class="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                    <span>Phase_{{ step }}</span>
+                    <span>100%_Integrity</span>
+                </div>
+                <div class="h-4 w-full bg-slate-200 dark:bg-slate-800 border-2 border-black p-0.5">
+                    <div class="h-full bg-indigo-600 border-r-2 border-black transition-all duration-700 shadow-[2px_0px_10px_rgba(79,70,229,0.5)]" 
+                         style="width: {% if step == '1' %}50%{% else %}100%{% endif %};"></div>
+                </div>
+            </div>
+        </header>
+
+        {# --- FORM CONTAINER --- #}
+        <div class="bg-white dark:bg-slate-900 border-4 border-black dark:border-white p-8 md:p-12 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.05)] transition-all">
+            
+            {% if step == '2' %}
+            <div class="mb-8 p-4 bg-slate-50 dark:bg-slate-800 border-2 border-black border-dashed">
+                <h6 class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-3">
+                    <i class="fas fa-terminal me-2"></i>Pre-Transmission_Summary
+                </h6>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[9px] text-slate-500 uppercase font-bold mb-1">Signal_Type</p>
+                        <span class="px-2 py-1 border-2 border-black text-[10px] font-black uppercase {% if request.POST.item_type == 'lost' %}bg-rose-500 text-white{% else %}bg-emerald-500 text-white{% endif %}">
+                            {{ request.POST.item_type|default:"Signal" }}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-slate-500 uppercase font-bold mb-1">Sector_Category</p>
+                        <p class="text-xs font-black text-black dark:text-white uppercase m-0">{{ request.POST.category_name|default:"General_Intel" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" novalidate id="wizardForm" class="space-y-8">
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-black uppercase tracking-widest text-black dark:text-white flex justify-between">
+                        <span>{{ forloop.counter }}. {{ field.label }} {% if field.field.required %}<span class="text-rose-500">*</span>{% endif %}</span>
+                    </label>
+
+                    <div class="relative">
+                        {% if field.name == 'item_type' %}
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="cursor-pointer group">
+                                    <input type="radio" name="{{ field.name }}" value="lost" class="peer hidden" {% if field.value == 'lost' or not field.value %}checked{% endif %}>
+                                    <div class="border-4 border-black dark:border-slate-700 p-4 flex items-center justify-center gap-3 transition-all grayscale group-hover:grayscale-0 peer-checked:grayscale-0 peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-black dark:peer-checked:border-white">
+                                        <i class="fas fa-search-minus"></i>
+                                        <span class="font-black uppercase text-xs tracking-tighter">Lost_Signal</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer group">
+                                    <input type="radio" name="{{ field.name }}" value="found" class="peer hidden" {% if field.value == 'found' %}checked{% endif %}>
+                                    <div class="border-4 border-black dark:border-slate-700 p-4 flex items-center justify-center gap-3 transition-all grayscale group-hover:grayscale-0 peer-checked:grayscale-0 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-black dark:peer-checked:border-white">
+                                        <i class="fas fa-hand-holding-heart"></i>
+                                        <span class="font-black uppercase text-xs tracking-tighter">Found_Signal</span>
+                                    </div>
+                                </label>
+                            </div>
+                        {% else %}
+                            {{ field|add_class:"w-full bg-slate-50 dark:bg-slate-800 border-4 border-black dark:border-slate-700 p-4 text-sm font-bold text-black dark:text-white focus:ring-0 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-400" }}
+                        {% endif %}
+                    </div>
+
+                    {% if field.help_text %}
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight m-0">// {{ field.help_text|striptags }}</p>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                        <div class="bg-rose-500 text-white text-[10px] font-black uppercase px-2 py-1 border-2 border-black inline-block self-start">
+                            <i class="fas fa-exclamation-triangle me-1"></i>{{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                {# --- NAVIGATION --- #}
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pt-10 border-t-4 border-slate-100 dark:border-slate-800">
+                    <div>
+                        {% if step == '2' %}
+                            <a href="?step=1" class="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 no-underline transition-colors">
+                                <i class="fas fa-chevron-left me-2"></i>Return_to_Phase_1
+                            </a>
+                        {% else %}
+                            <a href="{% url 'core:dashboard' %}" class="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 no-underline transition-colors">
+                                <i class="fas fa-times me-2"></i>Abort_Operation
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="w-full sm:w-auto bg-black dark:bg-indigo-600 text-white px-10 py-4 border-4 border-black dark:border-white font-black text-[11px] uppercase tracking-[0.2em] shadow-[6px_6px_0px_0px_rgba(79,70,229,0.5)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
+                        {% if step == '1' %}
+                            Next_Phase <i class="fas fa-arrow-right ms-2"></i>
+                        {% else %}
+                            Confirm_&_Broadcast <i class="fas fa-broadcast-tower ms-2"></i>
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-8 text-center opacity-30">
+            <p class="text-[9px] font-mono text-black dark:text-white uppercase tracking-[0.5em]">System.auth.secure_connection_v2.5</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for standard form widgets (Select, Textarea) to match the custom input */
+    select, textarea {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236366f1' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 1.5rem center !important;
+        background-size: 12px 10px !important;
+    }
+</style>
+{% endblock %}

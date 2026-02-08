@@ -1,0 +1,93 @@
+{% extends 'core/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Create_Account | Found.it{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-brand dark:bg-[#020617] flex items-center justify-center pt-28 pb-20 px-4 transition-colors duration-500">
+    
+    {# --- DECORATIVE GRID OVERLAY --- #}
+    <div class="absolute inset-0 z-0 opacity-10 pointer-events-none" 
+         style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+    <div class="w-full max-w-[500px] relative z-10">
+        
+        {# --- SIGNUP CARD --- #}
+        <div class="bg-white dark:bg-slate-900 p-8 md:p-12 border-4 border-black dark:border-white shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] dark:shadow-[16px_16px_0px_0px_rgba(255,255,255,0.05)] transition-all duration-300">
+            
+            {# HEADER #}
+            <div class="text-center mb-10">
+                <div class="w-16 h-16 bg-white dark:bg-slate-800 border-4 border-black dark:border-white flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <i class="fas fa-users-rays text-2xl text-black dark:text-white"></i>
+                </div>
+                <h1 class="text-3xl font-black text-black dark:text-white tracking-tighter uppercase mb-2">Create_Identity</h1>
+                <p class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-relaxed">
+                    // Joining Sector Community to Broadcast Signal Logs
+                </p>
+            </div>
+
+            <form method="post" novalidate class="space-y-5">
+                {% csrf_token %}
+                
+                {# NON-FIELD ERRORS #}
+                {% if form.non_field_errors %}
+                    <div class="p-4 bg-rose-500 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <ul class="list-none p-0 m-0">
+                            {% for error in form.non_field_errors %}
+                                <li class="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
+                                    <i class="fas fa-triangle-exclamation"></i> {{ error }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {# FIELD ITERATION #}
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}" class="block text-[11px] font-black uppercase tracking-widest text-black dark:text-white mb-2 ml-1">
+                            {{ field.label }}
+                        </label>
+                        
+                        <div class="relative group">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-black dark:text-slate-400 z-10">
+                                {% if "email" in field.name %}<i class="fa-regular fa-envelope text-sm"></i>
+                                {% elif "password" in field.name %}<i class="fa-regular fa-lock text-sm"></i>
+                                {% else %}<i class="fa-regular fa-user text-sm"></i>{% endif %}
+                            </span>
+                            
+                            {% render_field field class="w-full p-4 pl-12 border-4 border-black dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-bold text-black dark:text-white focus:outline-none focus:border-brand dark:focus:border-indigo-400 transition-all placeholder:text-slate-400" %}
+                        </div>
+
+                        {% if field.errors %}
+                            <div class="mt-2 bg-rose-500/10 border-l-4 border-rose-500 p-2">
+                                {% for error in field.errors %}
+                                    <p class="text-[9px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-tighter mb-0">
+                                        <i class="fas fa-bolt mr-1"></i> {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                {# SUBMIT #}
+                <button type="submit" class="w-full bg-black dark:bg-white text-white dark:text-black border-4 border-black dark:border-white py-4 text-[12px] font-black uppercase tracking-[0.2em] shadow-[8px_8px_0px_0px_rgba(79,70,229,0.4)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer mt-6">
+                    Initialize_Registration
+                </button>
+            </form>
+
+            {# FOOTER LINKS #}
+            <div class="mt-10 pt-8 border-t-2 border-slate-100 dark:border-slate-800 text-center space-y-4">
+                <p class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-0">
+                    Already an Entity? 
+                    <a href="{% url 'core:login' %}" class="text-brand dark:text-indigo-400 font-black no-underline ml-1 hover:underline underline-offset-4">Access_Terminal</a>
+                </p>
+                <a href="{% url 'core:home' %}" class="inline-block text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-black dark:hover:text-white no-underline transition-colors">
+                    <i class="fas fa-arrow-left text-[8px] me-1"></i> Return_to_Base
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

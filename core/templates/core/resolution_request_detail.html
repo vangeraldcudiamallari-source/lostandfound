@@ -1,0 +1,6 @@
+{% if request.reporter_confirmed == False %}
+    <form method="POST" action="{{ url_for('confirm_resolution', request_id=request.id) }}">
+        <p>Has {{ request.claimant.username }} successfully claimed your reported item?</p>
+        <button type="submit">Confirm Item was Returned</button>
+    </form>
+{% endif %}

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found Listings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <script>
+        tailwind.config = { darkMode: 'class' }
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="theme-transition bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
+
+    <nav class="glass-nav px-6 py-3 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center space-x-1 font-extrabold text-xl tracking-tighter">
+            <a href="/" class="text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                <span class="bg-indigo-600 text-white p-1 rounded-lg text-sm">🔍</span> Lost&Found
+            </a>
+        </div>
+        
+        <div class="flex space-x-6 font-bold items-center text-[13px]">
+            <button id="theme-toggle" class="p-2 rounded-full border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition shadow-sm">
+                <span id="theme-toggle-dark-icon" class="hidden text-slate-600">🌙</span>
+                <span id="theme-toggle-light-icon" class="hidden text-amber-400">☀️</span>
+            </button>
+            <a href="/" class="hidden md:block text-indigo-600 hover:text-indigo-700">Browse Items</a>
+            <a href="#" class="hidden md:block hover:text-indigo-600 transition">Dashboard</a>
+            <a href="#" class="hidden md:block hover:text-indigo-600 transition flex items-center gap-1">
+                <span class="text-lg">📧</span> Messages
+            </a>
+            
+            <div class="flex items-center gap-4 border-l pl-6 border-gray-200 dark:border-slate-700">
+                <div class="hidden sm:flex items-center gap-1 cursor-pointer hover:opacity-80">
+                    <span class="text-gray-500">Hi, Admin</span>
+                    <span class="text-[10px] text-gray-400">▼</span>
+                </div>
+                <a href="/report" class="bg-indigo-600 text-white px-5 py-2.5 rounded-full font-extrabold hover:bg-indigo-700 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-indigo-200 dark:shadow-none">
+                    <span class="text-xl leading-none">+</span> Report Item
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto mt-12 px-4 pb-20">
+        <header class="mb-10">
+            <h1 class="text-4xl font-extrabold tracking-tight text-slate-800 dark:text-white">Recent Listings</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg">Help return items to their owners or find what you've lost.</p>
+        </header>
+
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm">
+            <form id="search-form" action="/" method="GET" onsubmit="return handleFormSubmit(event)">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                    
+                    <div class="md:col-span-4">
+                        <label class="search-label">Search Keywords</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-gray-400">🔍</span>
+                            <input type="text" id="live-search" name="search" value="{{ request.args.get('search', '') }}"
+                                   placeholder="What are you looking for?" 
+                                   class="search-input-focus w-full py-3 rounded-xl text-sm transition-all border-gray-200">
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label class="search-label">Category</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-gray-400">📁</span>
+                            <select name="type" id="type-filter" class="search-input-focus w-full py-3 rounded-xl text-sm transition-all border-gray-200">
+                                <option value="all" {% if request.args.get('type') == 'all' %}selected{% endif %}>All Items</option>
+                                <option value="lost" {% if request.args.get('type') == 'lost' %}selected{% endif %}>Lost Items</option>
+                                <option value="found" {% if request.args.get('type') == 'found' %}selected{% endif %}>Found Items</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label class="search-label">Status</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-gray-400">✅</span>
+                            <select name="status" id="status-filter" class="search-input-focus w-full py-3 rounded-xl text-sm transition-all border-gray-200">
+                                <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>Active Only</option>
+                                <option value="resolved" {% if request.args.get('status') == 'resolved' %}selected{% endif %}>Recently Resolved</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 flex gap-2">
+                        <button type="submit" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-extrabold text-sm hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100 dark:shadow-none">
+                            Apply
+                        </button>
+                        <button type="button" onclick="clearAllFilters()" class="px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700 transition active:rotate-180 duration-500" title="Reset Filters">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div id="recent-searches-container" class="mt-6 hidden border-t border-gray-50 dark:border-slate-700/50 pt-5">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Your Recent Searches</span>
+                    <button id="clear-history" class="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase transition">Clear History</button>
+                </div>
+                <div id="search-history-list" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+
+        <div id="items-container" class="mt-12 relative">
+            
+            <div id="loading-skeleton" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for i in range(3) %}
+                <div class="skeleton-card h-[400px]">
+                    <div class="skeleton h-52 w-full mb-6 rounded-2xl"></div>
+                    <div class="skeleton h-8 w-3/4 mb-4 rounded-lg"></div>
+                    <div class="skeleton h-4 w-full mb-2 rounded-md"></div>
+                    <div class="skeleton h-4 w-1/2 mb-6 rounded-md"></div>
+                    <div class="flex gap-3 mt-auto">
+                        <div class="skeleton h-10 w-24 rounded-full"></div>
+                        <div class="skeleton h-10 w-10 rounded-full"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div id="real-items">
+                {% if items %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {% for item in items %}
+                            {% include 'partials/_item_card.html' %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div id="empty-state" class="flex flex-col items-center justify-center py-32 text-center bg-white dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-gray-100 dark:border-slate-700">
+                        <div class="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-6 text-5xl empty-state-icon">
+                            🕵️
+                        </div>
+                        <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white">No items found</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-3 max-w-sm mx-auto text-lg">We couldn't find any listings matching those filters. Try broad terms like "wallet" or "keys".</p>
+                        <button onclick="clearAllFilters()" class="mt-8 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 px-8 py-3 rounded-full font-bold hover:bg-indigo-100 transition-all">
+                            Show All Items
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Use your existing logic here, it is already robust! 
+        // I've just ensured the 'showLoading' function is triggered on all actions.
+
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        const searchInput = document.getElementById('live-search');
+        const typeFilter = document.getElementById('type-filter');
+        const statusFilter = document.getElementById('status-filter');
+        const historyContainer = document.getElementById('recent-searches-container');
+        const historyList = document.getElementById('search-history-list');
+        const skeletonLoader = document.getElementById('loading-skeleton');
+        const realItemsContainer = document.getElementById('real-items');
+
+        const updateIcons = () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            darkIcon.classList.toggle('hidden', isDark);
+            lightIcon.classList.toggle('hidden', !isDark);
+        };
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateIcons();
+        });
+        updateIcons();
+
+        function showLoading() {
+            if (realItemsContainer) realItemsContainer.classList.add('opacity-0', 'pointer-events-none');
+            if (skeletonLoader) skeletonLoader.classList.remove('hidden');
+        }
+
+        function handleFormSubmit(e) {
+            const val = searchInput.value.trim();
+            if(val) {
+                let h = JSON.parse(localStorage.getItem('ls_history') || '[]');
+                h = h.filter(x => x.query.toLowerCase() !== val.toLowerCase());
+                h.unshift({query: val, type: typeFilter.value});
+                localStorage.setItem('ls_history', JSON.stringify(h.slice(0, 6)));
+            }
+            showLoading();
+            return true;
+        }
+
+        const renderHistory = () => {
+            const history = JSON.parse(localStorage.getItem('ls_history') || '[]');
+            if (history.length === 0) {
+                historyContainer.classList.add('hidden');
+                return;
+            }
+            historyContainer.classList.remove('hidden');
+            historyList.innerHTML = history.map((item, index) => `
+                <div class="history-chip-wrapper">
+                    <button onclick="applyHistory('${item.query}', '${item.type}')" class="history-chip-main">
+                        <span class="opacity-40">🕒</span> ${item.query}
+                    </button>
+                    <button onclick="removeFromHistory(event, ${index})" class="delete-history-item">✕</button>
+                </div>
+            `).join('');
+        };
+
+        window.applyHistory = (q, t) => {
+            searchInput.value = q;
+            typeFilter.value = t;
+            showLoading();
+            document.getElementById('search-form').submit();
+        };
+
+        window.removeFromHistory = (e, i) => {
+            e.stopPropagation();
+            let h = JSON.parse(localStorage.getItem('ls_history') || '[]');
+            h.splice(i, 1);
+            localStorage.setItem('ls_history', JSON.stringify(h));
+            renderHistory();
+        };
+
+        window.clearAllFilters = () => {
+            showLoading();
+            window.location.href = window.location.pathname; 
+        };
+
+        document.getElementById('clear-history').addEventListener('click', () => {
+            localStorage.removeItem('ls_history');
+            renderHistory();
+        });
+
+        renderHistory();
+    </script>
+</body>
+</html>

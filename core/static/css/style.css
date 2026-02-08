@@ -1,0 +1,132 @@
+/* ==========================================================
+   0. THEME AWARENESS & VARIABLE MAPPING 
+   ========================================================== */
+:root {
+    --brand-color: #4a00e0;
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-light: rgba(99, 102, 241, 0.1);
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    
+    /* Light Theme Palette */
+    --text-dark: #0f172a;      
+    --text-medium: #475569;    
+    --text-light: #64748b;     
+    --border-color: #e2e8f0;   
+    --bg-light: #f8fafc;       
+    --white: #ffffff;
+    --card-bg: #ffffff;
+    --input-bg: #f8fafc;       
+    --nav-bg: rgba(255, 255, 255, 0.85);
+
+    /* Brutalist Variables (Light) */
+    --brutalist-shadow: 8px 8px 0px 0px rgba(15, 23, 42, 1);
+    --brutalist-shadow-hover: 12px 12px 0px 0px var(--primary-color);
+    --brutalist-border: 3px solid #0f172a;
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.dark {
+    --text-dark: #f8fafc;      
+    --text-medium: #cbd5e1;    
+    --text-light: #94a3b8;     
+    --border-color: #1e293b;   
+    --bg-light: #020617;       
+    --white: #0f172a;          
+    --card-bg: #0f172a;        
+    --input-bg: #1e293b;       
+    --nav-bg: rgba(2, 6, 23, 0.8);
+
+    /* Brutalist Variables (Dark) - Increased shadow contrast */
+    --brutalist-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 0.8);
+    --brutalist-shadow-hover: 12px 12px 0px 0px var(--primary-color);
+    --brutalist-border: 3px solid #f8fafc; /* Lighter border for dark mode visibility */
+}
+
+/* ==========================================================
+   1. GLOBAL SELECTION & ACCESSIBILITY FIXES
+   ========================================================== */
+::selection {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.dark ::selection {
+    background-color: #ff00c1; /* Neon Pink highlight for Dark Mode */
+    color: white;
+}
+
+/* Fix for unclickable/unselectable text */
+.glitch-hover {
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+    user-select: text;
+    display: inline-block;
+}
+
+/* ==========================================================
+   2. BRUTALIST ANIMATIONS
+   ========================================================== */
+.brutalist-card {
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    border: var(--brutalist-border) !important;
+    box-shadow: var(--brutalist-shadow);
+}
+
+.brutalist-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--brutalist-shadow-hover) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.glitch-hover:hover {
+    animation: stack 340ms infinite;
+}
+
+@keyframes stack {
+    0% { text-shadow: -2px -2px 0 #ff00c1, 2px 2px 0 #00fff9; transform: translate(0); }
+    25% { text-shadow: 2px -2px 0 #ff00c1, -2px 2px 0 #00fff9; transform: translate(-1px, 1px); }
+    50% { text-shadow: -2px 2px 0 #ff00c1, 2px -2px 0 #00fff9; transform: translate(1px, -1px); }
+    100% { text-shadow: -2px -2px 0 #ff00c1, 2px 2px 0 #00fff9; transform: translate(0); }
+}
+
+/* ==========================================================
+   3. COMPONENT STYLES
+   ========================================================== */
+.owner-card-surface {
+    background-color: var(--white) !important;
+    border: 1px solid var(--border-color);
+}
+
+.btn-owner-action {
+    background-color: var(--text-dark) !important; 
+    color: var(--bg-light) !important;      
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-weight: 900;
+    text-transform: uppercase;
+    border: 2px solid currentColor;
+}
+
+.btn-owner-action:active {
+    transform: translateY(2px);
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.glass-nav {
+    background-color: var(--nav-bg) !important;
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 1050 !important;
+}
